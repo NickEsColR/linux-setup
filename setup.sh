@@ -175,13 +175,13 @@ while IFS= read -r tool; do
             echo "  [dry-run] repo: $local_pkg"
             installed=true
         elif [[ "$DISTRO" == "arch" ]]; then
-            install_with_pacman "$local_pkg" && installed=true || true
+            if install_with_pacman "$local_pkg"; then installed=true; fi
         elif [[ "$DISTRO" == "pikaos" ]]; then
-            install_with_pikman "$local_pkg" && installed=true || true
+            if install_with_pikman "$local_pkg"; then installed=true; fi
         elif [[ "$DISTRO" == "fedora" ]]; then
-            install_with_dnf "$local_pkg" && installed=true || true
+            if install_with_dnf "$local_pkg"; then installed=true; fi
         else
-            install_with_apt "$local_pkg" && installed=true || true
+            if install_with_apt "$local_pkg"; then installed=true; fi
         fi
     fi
 
@@ -191,7 +191,7 @@ while IFS= read -r tool; do
             echo "  [dry-run] AUR: $local_aur"
             installed=true
         else
-            install_with_aur "$local_aur" && installed=true || true
+            if install_with_aur "$local_aur"; then installed=true; fi
         fi
     fi
 
@@ -201,7 +201,7 @@ while IFS= read -r tool; do
             echo "  [dry-run] flatpak: $local_flatpak"
             installed=true
         else
-            install_with_flatpak "$local_flatpak" && installed=true || true
+            if install_with_flatpak "$local_flatpak"; then installed=true; fi
         fi
     fi
 
@@ -212,14 +212,14 @@ while IFS= read -r tool; do
                 echo "  [dry-run] url: $local_url"
                 installed=true
             else
-                install_from_url "$local_url" && installed=true || true
+                if install_from_url "$local_url"; then installed=true; fi
             fi
         elif [[ -n "$local_script" ]]; then
             if [[ "$DRY_RUN" == true ]]; then
                 echo "  [dry-run] script: $local_script"
                 installed=true
             else
-                install_with_script "$local_script" && installed=true || true
+                if install_with_script "$local_script"; then installed=true; fi
             fi
         fi
     fi

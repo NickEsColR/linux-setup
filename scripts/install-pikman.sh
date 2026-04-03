@@ -6,5 +6,6 @@ install_with_pikman() {
     [[ -z "$packages" || "$packages" == "null" ]] && return 1
 
     echo "📦 Installing: $packages"
+    # shellcheck disable=SC2086
     sudo pikman install $packages
 }

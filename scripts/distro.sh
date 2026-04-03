@@ -7,6 +7,7 @@ detect_distro() {
     fi
 
     local id
+    # shellcheck disable=SC1091
     id=$(. /etc/os-release && echo "$ID")
     case "$id" in
         arch|cachyos|manjaro|endeavouros) echo "arch" ;;

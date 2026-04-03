@@ -185,7 +185,7 @@ confirm_script_execution() {
                 return 0
                 ;;
             [vV])
-                cat "$script_path" | less
+                less < "$script_path"
                 # Ask again (loop, not recursion)
                 ;;
             [aA])

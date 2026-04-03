@@ -11,5 +11,6 @@ install_with_aur() {
     fi
 
     echo "📦 Installing (AUR): $packages"
+    # shellcheck disable=SC2086
     paru -S --needed $packages
 }

@@ -28,6 +28,7 @@ install_from_url() {
     tmpfile=$(mktemp --suffix=".tmp")
 
     # Localized cleanup handler — cleans up on function return, not script exit
+    # shellcheck disable=SC2317
     cleanup() { rm -f "$tmpfile"; }
     trap cleanup RETURN
 

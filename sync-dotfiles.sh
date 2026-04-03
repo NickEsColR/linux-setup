@@ -46,7 +46,8 @@ backup_if_exists() {
 
     local filename
     filename="$(basename "$dest")"
-    local backup_name="${filename}.bak.$(date +%Y%m%dT%H%M%S)"
+    local backup_name
+    backup_name="${filename}.bak.$(date +%Y%m%dT%H%M%S)"
     local backup_path="$BACKUP_DIR/$backup_name"
 
     cp "$dest" "$backup_path"
