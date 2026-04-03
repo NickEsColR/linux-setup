@@ -1,0 +1,7 @@
+NAME="pikaOS"
+PRETTY_NAME="pikaOS GNU/Linux"
+ID=pikaos
+ID_LIKE=debian
+VERSION_ID="1"
+VERSION="1"
+HOME_URL="https://pikaos.com/"
