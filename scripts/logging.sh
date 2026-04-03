@@ -32,8 +32,13 @@ log_info() {
 
 ensure_not_root() {
     if [[ $EUID -eq 0 ]]; then
-        log_error "Do NOT run this script as root (sudo)."
-        log_error "The script will request sudo when needed."
+        log_error "This script cannot run as root."
+        log_error "It will request sudo permissions when needed."
+        echo ""
+        log_info "If you're in a Docker container, create a user first:"
+        echo "  useradd -m -G sudo tester"
+        echo "  echo 'tester ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
+        echo "  su - tester"
         exit 1
     fi
 }
