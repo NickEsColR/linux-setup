@@ -32,15 +32,15 @@ log_info() {
 
 ensure_not_root() {
     if [[ $EUID -eq 0 ]]; then
-        log_error "NO ejecutes este script como root (sudo)."
-        log_error "El script pedirá sudo cuando sea necesario."
+        log_error "Do NOT run this script as root (sudo)."
+        log_error "The script will request sudo when needed."
         exit 1
     fi
 }
 
 ensure_arch_based() {
     if ! command -v pacman &> /dev/null; then
-        log_error "Este script es solo para Arch Linux / CachyOS."
+        log_error "This script is for Arch Linux / CachyOS only."
         exit 1
     fi
 }

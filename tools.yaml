@@ -1,0 +1,199 @@
+# =============================================================================
+# tools.yaml — Single source of truth for multi-distro installation
+# =============================================================================
+#
+# Per-tool structure:
+#   arch:      package name in pacman (official) / AUR (paru)
+#   pikaos:    package name in pikman (pikaOS)
+#   debian:    package name in apt (Debian / Ubuntu / Mint)
+#   fedora:    package name in dnf
+#   flatpak:   Flathub ID (universal fallback)
+#   {distro}_url: Direct download URL (.deb / .rpm)
+#   script:    Official installation script URL
+#   checksum:  SHA256 of the downloaded file (only for _url)
+#
+# Rules:
+#   - If a field doesn't apply, just omit it (don't use null)
+#   - If a field has multiple packages, separate with spaces
+#   - If pikaos is not defined, the installer falls back to debian automatically
+#   - checksum is used to verify _url downloads (SHA256)
+#
+# Installation cascade:
+#   1. Official repo (pacman / pikman / apt / dnf)  ← most trusted
+#   2. AUR (Arch only, if official repo failed)
+#   3. Flatpak
+#   4. Direct URL (.deb / .rpm)  ← requires checksum for security
+#   5. Official install script  ← HIGHEST RISK: executes remote code
+#
+# SECURITY:
+#   - Official repos (pacman/pikman/apt/dnf) are verified by the distro
+#   - AUR: review PKGBUILD before installing
+#   - Flatpak: Flathub verifies applications
+#   - Direct URLs: ADD checksum to detect tampering
+#   - Scripts: MOST RISK — review before executing
+# =============================================================================
+
+tools:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FLATPAK
+  # ═══════════════════════════════════════════════════════════════════════════
+  flatseal:
+    flatpak: "com.github.tchx84.Flatseal"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VERSION CONTROL
+  # ═══════════════════════════════════════════════════════════════════════════
+  git:
+    arch: "git"
+    debian: "git"
+    fedora: "git"
+
+  github-cli:
+    arch: "github-cli"
+    debian: "gh"
+    fedora: "gh"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # EDITORS / IDE
+  # ═══════════════════════════════════════════════════════════════════════════
+  # vscode:
+  #   arch: "visual-studio-code-bin"              # AUR
+  #   debian: "code"                              # requires Microsoft repo
+  #   fedora: "code"                              # requires Microsoft repo
+  #   flatpak: "com.visualstudio.code"
+  #   debian_url: "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
+  #   fedora_url: "https://code.visualstudio.com/sha/download?build=stable&os=linux-rpm-x64"
+
+  # cursor:
+  #   arch: "cursor-bin" # AUR only
+
+  opencode:
+    arch: "opencode-bin" # AUR only
+    script: "https://opencode.ai/install"
+
+  zed:
+    arch: "zed"
+    # flatpak: "dev.zed.Zed" # Prefer script to keep it closer to machine, better performance
+    script: "https://zed.dev/install.sh"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DEVELOPMENT
+  # ═══════════════════════════════════════════════════════════════════════════
+  insomnia: # Like Postman but TUI
+    flatpak: "flathub rest.insomnia.Insomnia"
+
+  dbgate: # tableplus alternative aur only
+    flatpak: "flathub org.dbgate.DbGate"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONTAINERS
+  # ═══════════════════════════════════════════════════════════════════════════
+  docker:
+    arch: "docker docker-compose"
+    debian: "docker.io docker-compose-v2"
+    fedora: "docker docker-compose-plugin"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENVIRONMENT MANAGERS
+  # ═══════════════════════════════════════════════════════════════════════════
+  fnm:
+    arch: "fnm"
+    script: "curl -fsSL https://fnm.vercel.app/install | bash"
+
+  pnpm:
+    arch: "pnpm"
+    script: "https://get.pnpm.io/install.sh"
+
+  uv:
+    script: "https://astral.sh/uv/install.sh"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TERMINAL
+  # ═══════════════════════════════════════════════════════════════════════════
+  warp-terminal:
+    arch: "warp-terminal-bin"
+    debian_url: "https://app.warp.dev/get_warp?package=deb"
+    fedora_url: "https://app.warp.dev/get_warp?package=rpm"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BROWSERS
+  # ═══════════════════════════════════════════════════════════════════════════
+  brave:
+    arch: "brave-bin" # AUR
+    # debian: "brave-browser" # Avoid Brave repo to ease management, flatpak works well for this usage
+    # fedora: "brave-browser" # Avoid Brave repo to ease management, flatpak works well for this usage
+    flatpak: "com.brave.Browser"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMUNICACION
+  # ═══════════════════════════════════════════════════════════════════════════
+  Discord:
+
+  zoom:
+    arch: "zoom" # AUR
+    flatpak: "us.zoom.Zoom"
+    debian_url: "https://zoom.us/client/latest/zoom_amd64.deb"
+    fedora_url: "https://zoom.us/client/latest/zoom_x86_64.rpm"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # MUSIC
+  # ═══════════════════════════════════════════════════════════════════════════
+  ytmdesktop:
+    flatpak: "app.ytmdesktop.ytmdesktop"
+
+  musescore:
+    arch: "musescore"
+    debian: "musescore4"
+    fedora: "musescore"
+    flatpak: "org.musescore.MuseScore"
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PRODUCTIVITY
+  # ═══════════════════════════════════════════════════════════════════════════
+  obs-studio:
+    arch: "obs-studio"
+    debian: "obs-studio"
+    fedora: "obs-studio"
+    flatpak: "com.obsproject.Studio"
+
+  krita:
+    arch: "krita"
+    debian: "krita"
+    fedora: "krita"
+    flatpak: "org.kde.krita"
+
+  calibre:
+    arch: "calibre"
+    debian: "calibre"
+    fedora: "calibre"
+    flatpak: "com.calibre_ebook.calibre"
+
+  onlyoffice:
+    arch: "onlyoffice-bin" # aur
+    # debian_url: "https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb" # flatpak prefered
+    flatpak: "org.onlyoffice.desktopeditors"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # GAMING
+  # ═══════════════════════════════════════════════════════════════════════════
+  steam:
+    arch: "steam"
+    debian: "steam-installer"
+    fedora: "steam"
+    flatpak: "com.valvesoftware.Steam"
+
+  heroic_launcher:
+    arch: "heroic"
+    flatpak: "com.heroicgameslauncher.hgl"
+    debian_url: "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/latest/download/heroic_amd64.deb"
+
+  performance_tools:
+    arch: "mangohud lib32-mangohud goverlay"
+    debian: "mangohud goverlay"
+    flatpak: "org.freedesktop.Platform.VulkanLayer.MangoHud" # Si steam o heroic se instalan en flatpak
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IA
+  # ═══════════════════════════════════════════════════════════════════════════
+  ollama:
+    arch: "ollama cuda"
+    script: "https://ollama.com/install.sh"
