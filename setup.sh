@@ -135,16 +135,13 @@ ALL_KEYS=$(yq '.tools | keys | .[]' "$TOOLS_FILE")
 TOTAL=$(echo "$ALL_KEYS" | wc -l)
 INSTALLED=0
 SKIPPED=0
-CURRENT=0
-
 # Count candidates for progress
 count_words() { echo $#; }
-NATIVE_COUNT=$(count_words $NATIVE_LIST)
-AUR_COUNT=$(count_words $AUR_LIST)
-FLATPAK_COUNT=$(count_words $FLATPAK_LIST)
-URL_COUNT=$(count_words $URL_LIST)
-SCRIPT_COUNT=$(count_words $SCRIPT_LIST)
-CANDIDATE_TOTAL=$((NATIVE_COUNT + AUR_COUNT + FLATPAK_COUNT + URL_COUNT + SCRIPT_COUNT))
+NATIVE_COUNT=$(count_words "$NATIVE_LIST")
+AUR_COUNT=$(count_words "$AUR_LIST")
+FLATPAK_COUNT=$(count_words "$FLATPAK_LIST")
+URL_COUNT=$(count_words "$URL_LIST")
+SCRIPT_COUNT=$(count_words "$SCRIPT_LIST")
 
 # Install NATIVE (batch — all packages at once)
 if [[ -n "$NATIVE_LIST" ]]; then
