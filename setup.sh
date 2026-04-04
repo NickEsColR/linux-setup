@@ -88,102 +88,139 @@ echo "════════════════════════�
 echo "  STEP 3: Install tools"
 echo "═══════════════════════════════════════════════════════════"
 
-# Get YAML keys
-TOOL_KEYS=$(yq '.tools | keys | .[]' "$TOOLS_FILE")
-TOTAL=$(echo "$TOOL_KEYS" | wc -l)
-CURRENT=0
+# ── Phase 1: Classification by exclusive bucket (declarative) ──
+echo "🔍 Filtrando candidatos para $DISTRO (aplicando jerarquía)..."
+
+# A. NATIVE: Tools with the current distro key
+#    pikaOS fallback: include debian packages that don't have pikaos key
+if [[ "$DISTRO" == "pikaos" ]]; then
+    PIKA_PKGS=$(yq '.tools[] | select(has("pikaos")) | .pikaos' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+    DEBIAN_FALLBACK=$(yq '.tools[] | select((has("pikaos") | not) and has("debian")) | .debian' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+    NATIVE_LIST="$PIKA_PKGS $DEBIAN_FALLBACK"
+else
+    NATIVE_LIST=$(yq ".tools[] | select(has(\"$DISTRO\")) | .\"$DISTRO\"" "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+fi
+
+# B. AUR: Tools with 'aur' but NOT the current distro key (Arch only)
+AUR_LIST=""
+if [[ "$DISTRO" == "arch" ]]; then
+    AUR_LIST=$(yq ".tools[] | select(has(\"aur\") and (has(\"arch\") | not)) | .aur" "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+fi
+
+# C. FLATPAK: Tools with 'flatpak' but NOT distro key, NOT aur
+FLATPAK_LIST=$(yq ".tools[] | select(has(\"flatpak\") and (has(\"$DISTRO\") | not) and (has(\"aur\") | not)) | .flatpak" "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+
+# D. URL: Tools with distro_url but NOT distro, aur, or flatpak
+if [[ "$DISTRO" == "pikaos" ]]; then
+    URL_LIST=$(yq '.tools[] | select((has("pikaos_url") | not) and (has("pikaos") | not) and (has("debian_url")) and (has("debian") | not) and (has("aur") | not) and (has("flatpak") | not)) | .debian_url' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+else
+    URL_LIST=$(yq ".tools[] | select(has(\"${DISTRO}_url\") and (has(\"$DISTRO\") | not) and (has(\"aur\") | not) and (has(\"flatpak\") | not)) | .\"${DISTRO}_url\"" "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+fi
+
+# E. SCRIPT: Tools that ONLY have 'script' (no distro, aur, flatpak, or url keys)
+SCRIPT_LIST=$(yq '.tools[] | select(has("script") and (has("arch") | not) and (has("aur") | not) and (has("debian") | not) and (has("fedora") | not) and (has("flatpak") | not) and (has("arch_url") | not) and (has("debian_url") | not) and (has("fedora_url") | not) and (has("pikaos") | not) and (has("pikaos_url") | not)) | .script' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+
+# ── Display classification ──
+echo "-----------------------------------------------------------"
+[[ -n "$NATIVE_LIST" ]]  && echo "📦 Candidatos Nativo ($DISTRO): $NATIVE_LIST"
+[[ -n "$AUR_LIST" ]]     && echo "🏪 Candidatos AUR: $AUR_LIST"
+[[ -n "$FLATPAK_LIST" ]] && echo "🚀 Candidatos Flatpak: $FLATPAK_LIST"
+[[ -n "$URL_LIST" ]]     && echo "🔗 Candidatos URL: $URL_LIST"
+[[ -n "$SCRIPT_LIST" ]]  && echo "📜 Candidatos Script: $SCRIPT_LIST"
+[[ -z "$NATIVE_LIST$AUR_LIST$FLATPAK_LIST$URL_LIST$SCRIPT_LIST" ]] && echo "⚠️  No hay candidatos para $DISTRO"
+echo "-----------------------------------------------------------"
+
+# ── Phase 2: Installation ──
+ALL_KEYS=$(yq '.tools | keys | .[]' "$TOOLS_FILE")
+TOTAL=$(echo "$ALL_KEYS" | wc -l)
 INSTALLED=0
 SKIPPED=0
+CURRENT=0
 
-while IFS= read -r tool; do
-    CURRENT=$((CURRENT + 1))
+# Count candidates for progress
+count_words() { echo $#; }
+NATIVE_COUNT=$(count_words $NATIVE_LIST)
+AUR_COUNT=$(count_words $AUR_LIST)
+FLATPAK_COUNT=$(count_words $FLATPAK_LIST)
+URL_COUNT=$(count_words $URL_LIST)
+SCRIPT_COUNT=$(count_words $SCRIPT_LIST)
+CANDIDATE_TOTAL=$((NATIVE_COUNT + AUR_COUNT + FLATPAK_COUNT + URL_COUNT + SCRIPT_COUNT))
+
+# Install NATIVE (batch — all packages at once)
+if [[ -n "$NATIVE_LIST" ]]; then
     echo ""
-    echo "── [$CURRENT/$TOTAL] $tool ──"
-    local_pkg=""; local_aur=""; local_flatpak=""; local_url=""; local_script=""
-    # Read from YAML
-    eval "$(yq -o=shell ".tools.${tool}" "$TOOLS_FILE" | sed 's/^/TOOL_/')"
-
-    local dist_var="TOOL_${DISTRO}"
-    local_pkg="${!dist_var:-}"
-    local_aur="${TOOL_arch:-}"
-    local_flatpak="${TOOL_flatpak:-}"
-    local_url_var="TOOL_${DISTRO}_url"
-    local_url="${!local_url_var:-}"
-    local_script="${TOOL_script:-}"
-
-    # Fallback pikaOS → debian (if pikaos field is not defined)
-    if [[ "$DISTRO" == "pikaos" ]]; then
-        [[ -z "$local_pkg" ]] && local_pkg="${TOOL_debian:-}"
-        [[ -z "$local_url" ]] && local_url="${TOOL_debian_url:-}"
-    fi
-
-    installed=false
-
-    # ── 1. Official repo (pacman, pikman, apt, dnf) ──
-    if [[ -n "$local_pkg" ]]; then
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  [dry-run] repo: $local_pkg"
-            installed=true
-        elif [[ "$DISTRO" == "arch" ]]; then
-            if install_with_pacman "$local_pkg"; then installed=true; fi
-        elif [[ "$DISTRO" == "pikaos" ]]; then
-            if install_with_pikman "$local_pkg"; then installed=true; fi
-        elif [[ "$DISTRO" == "fedora" ]]; then
-            if install_with_dnf "$local_pkg"; then installed=true; fi
-        else
-            if install_with_apt "$local_pkg"; then installed=true; fi
-        fi
-    fi
-
-    # ── 2. AUR (Arch only, if official repo failed) ──
-    if [[ "$installed" == false && "$DISTRO" == "arch" && -n "$local_aur" ]]; then
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  [dry-run] AUR: $local_aur"
-            installed=true
-        else
-            if install_with_aur "$local_aur"; then installed=true; fi
-        fi
-    fi
-
-    # ── 3. Flatpak ──
-    if [[ "$installed" == false && -n "$local_flatpak" ]]; then
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  [dry-run] flatpak: $local_flatpak"
-            installed=true
-        else
-            if install_with_flatpak "$local_flatpak"; then installed=true; fi
-        fi
-    fi
-
-    # ── 4. Direct URL / Official script ──
-    if [[ "$installed" == false ]]; then
-        if [[ -n "$local_url" ]]; then
-            if [[ "$DRY_RUN" == true ]]; then
-                echo "  [dry-run] url: $local_url"
-                installed=true
-            else
-                if install_from_url "$local_url"; then installed=true; fi
-            fi
-        elif [[ -n "$local_script" ]]; then
-            if [[ "$DRY_RUN" == true ]]; then
-                echo "  [dry-run] script: $local_script"
-                installed=true
-            else
-                if install_with_script "$local_script"; then installed=true; fi
-            fi
-        fi
-    fi
-
-    # ── Result ──
-    if [[ "$installed" == true ]]; then
-        echo "  ✅ $tool"
-        INSTALLED=$((INSTALLED + 1))
+    echo "── Repos oficiales ($NATIVE_COUNT paquetes) ──"
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  [dry-run] $NATIVE_LIST"
+        INSTALLED=$((INSTALLED + NATIVE_COUNT))
+    elif [[ "$DISTRO" == "arch" ]]; then
+        if install_with_pacman "$NATIVE_LIST"; then INSTALLED=$((INSTALLED + NATIVE_COUNT)); fi
+    elif [[ "$DISTRO" == "pikaos" ]]; then
+        if install_with_pikman "$NATIVE_LIST"; then INSTALLED=$((INSTALLED + NATIVE_COUNT)); fi
+    elif [[ "$DISTRO" == "fedora" ]]; then
+        if install_with_dnf "$NATIVE_LIST"; then INSTALLED=$((INSTALLED + NATIVE_COUNT)); fi
     else
-        echo "  ⚠️  $tool — not available for $DISTRO"
-        SKIPPED=$((SKIPPED + 1))
+        if install_with_apt "$NATIVE_LIST"; then INSTALLED=$((INSTALLED + NATIVE_COUNT)); fi
     fi
+fi
 
-done < <(echo "$TOOL_KEYS")
+# Install AUR (batch — all packages at once)
+if [[ -n "$AUR_LIST" ]]; then
+    echo ""
+    echo "── AUR ($AUR_COUNT paquetes) ──"
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  [dry-run] $AUR_LIST"
+        INSTALLED=$((INSTALLED + AUR_COUNT))
+    else
+        if install_with_aur "$AUR_LIST"; then INSTALLED=$((INSTALLED + AUR_COUNT)); fi
+    fi
+fi
+
+# Install FLATPAK (batch — all packages at once)
+if [[ -n "$FLATPAK_LIST" ]]; then
+    echo ""
+    echo "── Flatpak ($FLATPAK_COUNT paquetes) ──"
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  [dry-run] $FLATPAK_LIST"
+        INSTALLED=$((INSTALLED + FLATPAK_COUNT))
+    else
+        if install_with_flatpak "$FLATPAK_LIST"; then INSTALLED=$((INSTALLED + FLATPAK_COUNT)); fi
+    fi
+fi
+
+# Install URL (disabled for this iteration — each URL needs separate download/processing)
+# if [[ -n "$URL_LIST" ]]; then
+#     echo ""
+#     echo "── URL directa ──"
+#     for url in $URL_LIST; do
+#         CURRENT=$((CURRENT + 1))
+#         echo "  [$CURRENT/$CANDIDATE_TOTAL] $url"
+#         if [[ "$DRY_RUN" == true ]]; then
+#             echo "    [dry-run]"
+#             INSTALLED=$((INSTALLED + 1))
+#         else
+#             if install_from_url "$url"; then INSTALLED=$((INSTALLED + 1)); fi
+#         fi
+#     done
+# fi
+
+# Install SCRIPT (disabled for this iteration — each script runs separately)
+# if [[ -n "$SCRIPT_LIST" ]]; then
+#     echo ""
+#     echo "── Script oficial ──"
+#     for script in $SCRIPT_LIST; do
+#         CURRENT=$((CURRENT + 1))
+#         echo "  [$CURRENT/$CANDIDATE_TOTAL] $script"
+#         if [[ "$DRY_RUN" == true ]]; then
+#             echo "    [dry-run]"
+#             INSTALLED=$((INSTALLED + 1))
+#         else
+#             if install_with_script "$script"; then INSTALLED=$((INSTALLED + 1)); fi
+#         fi
+#     done
+# fi
+
+SKIPPED=$((TOTAL - INSTALLED))
 
 # ═════════════════════════════════════════════════════════════════════════════
 # STEP 4: Post-installation

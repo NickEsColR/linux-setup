@@ -1,10 +1,11 @@
 #!/bin/bash
 
 install_with_flatpak() {
-    local app_id="$1"
+    local app_ids="$1"
 
-    [[ -z "$app_id" || "$app_id" == "null" ]] && return 1
+    [[ -z "$app_ids" || "$app_ids" == "null" ]] && return 1
 
-    echo "📦 Installing: $app_id"
-    flatpak install flathub "$app_id"
+    echo "📦 Installing (Flatpak): $app_ids"
+    # shellcheck disable=SC2086
+    flatpak install -y flathub $app_ids
 }
