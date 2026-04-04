@@ -8,7 +8,7 @@
 # This script does NOT auto-install everything. It:
 #   1. Checks prerequisites and tells you what to install if missing
 #   2. Installs native + AUR packages (if prerequisites are met)
-#   3. Shows you the flatpak command to run manually
+#   3. Shows you the flatpak, URL, and script commands to run manually
 #
 # Usage:
 #   ./guide.sh
@@ -171,11 +171,23 @@ fi
 # FLATPAK: Tools with 'flatpak'
 FLATPAK_LIST=$(yq '.tools[] | select(has("flatpak")) | .flatpak' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
 
+# URL: Tools with distro_url but NOT distro, aur, or flatpak
+if [[ "$DISTRO" == "pikaos" ]]; then
+    URL_LIST=$(yq '.tools[] | select((has("pikaos_url") | not) and (has("pikaos") | not) and (has("debian_url")) and (has("debian") | not) and (has("aur") | not) and (has("flatpak") | not)) | .debian_url' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+else
+    URL_LIST=$(yq ".tools[] | select(has(\"${DISTRO}_url\") and (has(\"$DISTRO\") | not) and (has(\"aur\") | not) and (has(\"flatpak\") | not)) | .\"${DISTRO}_url\"" "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+fi
+
+# SCRIPT: Tools that ONLY have 'script' (no distro, aur, flatpak, or url keys)
+SCRIPT_LIST=$(yq '.tools[] | select(has("script") and (has("arch") | not) and (has("aur") | not) and (has("debian") | not) and (has("fedora") | not) and (has("flatpak") | not) and (has("arch_url") | not) and (has("debian_url") | not) and (has("fedora_url") | not) and (has("pikaos") | not) and (has("pikaos_url") | not)) | .script' "$TOOLS_FILE" | grep -v "null" | tr '\n' ' ')
+
 # Show classification
 [[ -n "$NATIVE_LIST" ]]  && echo "  📦 Nativo ($DISTRO): $NATIVE_LIST"
 [[ -n "$AUR_LIST" ]]     && echo "  🏪 AUR: $AUR_LIST"
 [[ -n "$FLATPAK_LIST" ]] && echo "  🚀 Flatpak: $FLATPAK_LIST"
-[[ -z "$NATIVE_LIST$AUR_LIST$FLATPAK_LIST" ]] && echo "  ⚠️  No hay paquetes para $DISTRO"
+[[ -n "$URL_LIST" ]]     && echo "  🔗 URL: $URL_LIST"
+[[ -n "$SCRIPT_LIST" ]]  && echo "  📜 Script: $SCRIPT_LIST"
+[[ -z "$NATIVE_LIST$AUR_LIST$FLATPAK_LIST$URL_LIST$SCRIPT_LIST" ]] && echo "  ⚠️  No hay paquetes para $DISTRO"
 echo ""
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -213,20 +225,45 @@ else
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
-# STEP 4: Flatpak (manual)
+# STEP 4: Manual installations (Flatpak, URL, Script)
 # ═════════════════════════════════════════════════════════════════════════════
 echo "───────────────────────────────────────────────────────────"
-echo "  STEP 4: Flatpak (manual installation)"
+echo "  STEP 4: Manual installations"
 echo "───────────────────────────────────────────────────────────"
 echo ""
 
+# ── Flatpak ──
 if [[ -n "$FLATPAK_LIST" ]]; then
-    echo "  Ejecutá este comando para instalar los paquetes Flatpak:"
-    echo ""
+    echo "  🚀 Flatpak:"
     echo "    flatpak install -y flathub $FLATPAK_LIST"
     echo ""
 else
     echo "  ℹ️  No hay paquetes Flatpak"
+    echo ""
+fi
+
+# ── URL ──
+if [[ -n "$URL_LIST" ]]; then
+    echo "  🔗 Descargas directas (URL):"
+    for url in $URL_LIST; do
+        echo "    curl -fsSL '$url' -o /tmp/pkg && sudo dpkg -i /tmp/pkg || sudo dnf install -y /tmp/pkg && rm -f /tmp/pkg"
+    done
+    echo ""
+else
+    echo "  ℹ️  No hay paquetes por URL"
+    echo ""
+fi
+
+# ── Script ──
+if [[ -n "$SCRIPT_LIST" ]]; then
+    echo "  📜 Scripts de instalación:"
+    for script in $SCRIPT_LIST; do
+        echo "    curl -fsSL '$script' | bash"
+    done
+    echo ""
+else
+    echo "  ℹ️  No hay scripts de instalación"
+    echo ""
 fi
 
 # ═════════════════════════════════════════════════════════════════════════════
