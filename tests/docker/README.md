@@ -1,6 +1,6 @@
 # Testing in Docker Containers
 
-Interactive shell per distro — clone the repo and run `setup.sh` as if you were on a fresh machine.
+Interactive shell per distro — clone the repo and run `guide.sh` or `setup.sh` as if you were on a fresh machine.
 
 > **PowerShell**: commands below are single-line. No `\` continuation.
 > **Linux/macOS**: replace `$(pwd)` with your path or use `\` for multiline.
@@ -30,8 +30,11 @@ cd /setup
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# 5. Run installer
-bash setup.sh
+# 5. Run guided installer (recommended)
+bash guide.sh
+
+# Or try full automated install (may fail)
+# bash setup.sh
 ```
 
 ## Fedora
@@ -59,8 +62,11 @@ cd /setup
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# 5. Run installer
-bash setup.sh
+# 5. Run guided installer (recommended)
+bash guide.sh
+
+# Or try full automated install (may fail)
+# bash setup.sh
 ```
 
 ## Arch Linux
@@ -88,8 +94,11 @@ cd /setup
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# 5. Run installer
-bash setup.sh
+# 5. Run guided installer (recommended)
+bash guide.sh
+
+# Or try full automated install (may fail)
+# bash setup.sh
 ```
 
 ## pikaOS
