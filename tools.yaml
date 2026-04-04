@@ -75,7 +75,6 @@ tools:
     arch: "zed"
     # flatpak: "dev.zed.Zed" # Prefer script to keep it closer to machine, better performance
     script: "curl -f https://zed.dev/install.sh | sh"
-"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # DEVELOPMENT
