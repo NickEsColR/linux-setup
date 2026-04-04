@@ -28,17 +28,27 @@ Flatpak is available as a universal fallback on all distros.
 git clone https://github.com/NickEsColR/my-software-setup.git
 cd my-software-setup
 
-# 2. Install everything from tools.yaml
+# 2. Recommended: guided install (native + AUR auto, rest shown as commands)
+./guide.sh
+
+# 3. Or try the full automated installer (may fail on some setups)
 ./setup.sh
 
-# 3. Or preview what would happen
+# 4. Preview what setup.sh would install
 ./setup.sh --dry-run
 
-# 4. Sync dotfiles
+# 5. Sync dotfiles
 ./sync-dotfiles.sh
 ```
 
 ## How It Works
+
+### Two Installers
+
+| Script | Behavior | Best for |
+|--------|----------|----------|
+| `guide.sh` | Installs native + AUR packages automatically. Shows you the exact commands to run manually for Flatpak, URL downloads, and install scripts. | **Recommended** — you stay in control |
+| `setup.sh` | Attempts to install everything automatically (native, AUR, Flatpak in batch). URL and script installs are currently disabled. May fail if any package in the batch has issues. | Full automation (use at your own risk) |
 
 ### Single Source of Truth
 
@@ -58,14 +68,22 @@ tools:
 For each tool, the script tries sources in order of trust:
 
 ```
-1. Official repo (pacman / pikman / apt / dnf)  ← most trusted
-2. AUR (Arch only, via paru)                    ← if official repo failed
-3. Flatpak                                      ← universal fallback
-4. Direct URL (.deb / .rpm)                     ← with MIME type detection
-5. Official install script                      ← highest risk, reviewed last
+1. Official repo (pacman / pikman / apt / dnf)  ← most trusted, auto-installed
+2. AUR (Arch only, via paru)                    ← auto-installed
+3. Flatpak                                      ← shown as manual command
+4. Direct URL (.deb / .rpm)                     ← shown as manual command
+5. Official install script                      ← shown as manual command
 ```
 
-The first successful source wins. If a tool isn't available for your distro, it's skipped with a warning.
+### guide.sh — Prerequisites
+
+Before installing anything, `guide.sh` checks that required tools are available:
+
+- **yq** (YAML processor) — required to read `tools.yaml`. If missing, the script shows the download command and exits.
+- **paru** (AUR helper) — required on Arch if any AUR packages are defined. If missing, shows build commands and exits.
+- **flatpak** — required if any Flatpak packages are defined. If missing, shows install commands and exits.
+
+Once all prerequisites are met, native and AUR packages are installed in batch. Flatpak, URL, and script commands are printed for you to run manually.
 
 ### pikaOS Behavior
 
@@ -108,7 +126,8 @@ Existing files are backed up to `~/.dotfiles-backups/` before being overwritten.
 ## Project Structure
 
 ```
-├── setup.sh                  # Main installer
+├── guide.sh                  # Guided installer (recommended)
+├── setup.sh                  # Full automated installer
 ├── sync-dotfiles.sh          # Dotfile synchronizer
 ├── tools.yaml                # Tool definitions (single source of truth)
 ├── dotfiles/                 # Dotfiles to sync
@@ -116,6 +135,7 @@ Existing files are backed up to `~/.dotfiles-backups/` before being overwritten.
 └── scripts/
     ├── logging.sh            # ANSI colors, ensure_not_root
     ├── distro.sh             # Distro detection + system update
+    ├── ensure-deps.sh        # Dependency auto-install helpers
     ├── install-pacman.sh     # Arch official repos
     ├── install-pikman.sh     # pikaOS unified manager
     ├── install-apt.sh        # Debian/Ubuntu
@@ -127,8 +147,9 @@ Existing files are backed up to `~/.dotfiles-backups/` before being overwritten.
 
 ## Dependencies
 
-- `yq` — auto-installed if missing (downloaded from GitHub)
-- `paru` — auto-installed if on Arch and missing (built from AUR)
+- `yq` — required to read `tools.yaml`. `guide.sh` checks for it and shows the install command if missing.
+- `paru` — required on Arch for AUR packages. `guide.sh` checks for it and shows build commands if missing.
+- `flatpak` — required for Flatpak packages. `guide.sh` checks for it and shows install commands if missing.
 - `curl` — for downloads
 - `sudo` — for package installation
 
