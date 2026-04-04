@@ -1,0 +1,8 @@
+# GitHub CLI configuration
+# NOTE: This file does NOT contain auth tokens.
+# Tokens are stored separately in hosts.yml (DO NOT commit).
+
+git_protocol: ssh
+prompt: enabled
+editor: code --wait
+pager: less

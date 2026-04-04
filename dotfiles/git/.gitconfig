@@ -1,5 +1,11 @@
 [core]
-	editor = zed --wait
+	editor = code --wait
 [user]
-	email = 47890683+NickEsColR@users.noreply.github.com
+	email = nicoescol0818@gmail.com
 	name = NickEsColR
+[init]
+	defaultBranch = main
+[push]
+	autoSetupRemote = true
+[pull]
+	rebase = true

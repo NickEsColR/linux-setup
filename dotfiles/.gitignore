@@ -1,0 +1,27 @@
+# =============================================================================
+# Dotfiles .gitignore — NEVER commit secrets
+# =============================================================================
+
+# GitHub CLI — hosts.yml contains OAuth tokens
+**/gh/hosts.yml
+
+# Docker — config.json may contain registry auth credentials
+**/docker/config.json
+
+# VS Code — globalStorage may contain extension secrets
+**/vscode/globalStorage/
+
+# Zed — context_servers may contain API keys (already sanitized in settings.json)
+# If you add a separate file for API keys, ignore it here
+
+# Any .env files that might end up in dotfiles
+**/.env
+**/*.env
+
+# Backup files
+*.bak.*
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db

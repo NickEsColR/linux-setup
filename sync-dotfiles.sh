@@ -31,6 +31,7 @@ ensure_not_root
 
 DOTFILES=(
     "git/.gitconfig:$HOME/.gitconfig"
+    "gh/config.yml:$HOME/.config/gh/config.yml"
 )
 
 # ─── Functions ──────────────────────────────────────────────────────────────

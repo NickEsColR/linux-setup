@@ -1,0 +1,83 @@
+{
+  "languages": {
+    "Python": {
+      "tab_size": 4
+    }
+  },
+  "agent": {
+    "profiles": {
+      "minimal": {
+        "name": "minimal",
+        "tools": {},
+        "enable_all_context_servers": false,
+        "context_servers": {}
+      }
+    },
+    "default_profile": "ask",
+    "default_model": {
+      "effort": "high",
+      "provider": "copilot_chat",
+      "model": "gpt-5.4-mini",
+      "enable_thinking": false
+    },
+    "favorite_models": [
+      {
+        "provider": "copilot_chat",
+        "model": "claude-opus-4.6",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gpt-5.3-codex",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gemini-3.1-pro-preview",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "claude-sonnet-4.6",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gpt-5.4",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gpt-5.2",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gpt-5.4-mini",
+        "enable_thinking": false
+      }
+    ],
+    "model_parameters": []
+  },
+  "telemetry": {
+    "diagnostics": true,
+    "metrics": false
+  },
+  "buffer_font_fallbacks": [
+    "Cascadia Code",
+    "Consolas"
+  ],
+  "buffer_font_family": "Fira Code",
+  "show_edit_predictions": true,
+  "soft_wrap": "editor_width",
+  "tab_size": 2,
+  "base_keymap": "VSCode",
+  "icon_theme": "Material Icon Theme",
+  "ui_font_size": 16,
+  "buffer_font_size": 16.0,
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Tokyo Night"
+  }
+}
