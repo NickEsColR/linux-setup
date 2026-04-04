@@ -14,18 +14,23 @@ docker run --rm -it -v "$(pwd):/setup:ro" -w /setup --privileged debian:bookworm
 Inside the container:
 
 ```bash
-# Create a non-root user (setup.sh blocks root)
-useradd -m -G sudo tester
-echo 'tester ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+# 1. Install dependencies AS ROOT
+apt update && apt install -y curl sudo
+
+# 2. Create a non-root user with passwordless sudo
+useradd -m -G sudo -s /bin/bash tester
+echo 'tester ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/tester
+chmod 0440 /etc/sudoers.d/tester
+
+# 3. Switch to the user
 su - tester
 cd /setup
 
-# Install dependencies
-apt update && apt install -y curl sudo
+# 4. Install yq
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# Run installer
+# 5. Run installer
 bash setup.sh
 ```
 
@@ -38,18 +43,23 @@ docker run --rm -it -v "$(pwd):/setup:ro" -w /setup --privileged fedora:40 bash
 Inside the container:
 
 ```bash
-# Create a non-root user
-useradd -m -G wheel tester
-echo 'tester ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers.d/tester
+# 1. Install dependencies AS ROOT
+dnf install -y curl sudo
+
+# 2. Create a non-root user with passwordless sudo
+useradd -m -G wheel -s /bin/bash tester
+echo 'tester ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/tester
+chmod 0440 /etc/sudoers.d/tester
+
+# 3. Switch to the user
 su - tester
 cd /setup
 
-# Install dependencies
-dnf install -y curl sudo
+# 4. Install yq
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# Run installer
+# 5. Run installer
 bash setup.sh
 ```
 
@@ -62,49 +72,30 @@ docker run --rm -it -v "$(pwd):/setup:ro" -w /setup --privileged archlinux:lates
 Inside the container:
 
 ```bash
-# Create a non-root user
-pacman -Syu --noconfirm sudo
-useradd -m -G wheel tester
-echo 'tester ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers.d/tester
+# 1. Install dependencies AS ROOT
+pacman -Syu --noconfirm curl sudo
+
+# 2. Create a non-root user with passwordless sudo
+useradd -m -G wheel -s /bin/bash tester
+echo 'tester ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/tester
+chmod 0440 /etc/sudoers.d/tester
+
+# 3. Switch to the user
 su - tester
 cd /setup
 
-# Install dependencies
+# 4. Install yq
 curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
   -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-# Run installer
+# 5. Run installer
 bash setup.sh
 ```
 
 ## pikaOS
 
-pikaOS is based on Debian Sid (unstable):
-
-```powershell
-docker run --rm -it -v "$(pwd):/setup:ro" -w /setup --privileged debian:sid-slim bash
-```
-
-Inside the container:
-
-```bash
-# Create a non-root user
-useradd -m -G sudo tester
-echo 'tester ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-su - tester
-cd /setup
-
-# Fake pikaOS detection
-echo 'ID=pikaos' > /etc/os-release
-
-# Install dependencies
-apt update && apt install -y curl sudo
-curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
-  -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-
-# Run installer
-bash setup.sh
-```
+pikaOS uses `pikman` (custom package manager) which cannot be emulated in Docker.
+Test on a real pikaOS installation.
 
 ## Dry-run (preview only)
 
