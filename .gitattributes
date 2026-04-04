@@ -1,0 +1,5 @@
+# Force LF line endings for shell scripts and YAML files
+# This prevents CRLF issues when running on Linux/Docker from Windows
+*.sh    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf

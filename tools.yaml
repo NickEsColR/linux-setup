@@ -57,7 +57,7 @@ tools:
   # EDITORS / IDE
   # ═══════════════════════════════════════════════════════════════════════════
   # vscode:
-  #   arch: "visual-studio-code-bin"              # AUR
+  #   aur: "visual-studio-code-bin"
   #   debian: "code"                              # requires Microsoft repo
   #   fedora: "code"                              # requires Microsoft repo
   #   flatpak: "com.visualstudio.code"
@@ -65,16 +65,17 @@ tools:
   #   fedora_url: "https://code.visualstudio.com/sha/download?build=stable&os=linux-rpm-x64"
 
   # cursor:
-  #   arch: "cursor-bin" # AUR only
+  #   aur: "cursor-bin"
 
   opencode:
-    arch: "opencode-bin" # AUR only
-    script: "https://opencode.ai/install"
+    aur: "opencode-bin"
+    script: "curl -fsSL https://opencode.ai/install | bash"
 
   zed:
     arch: "zed"
     # flatpak: "dev.zed.Zed" # Prefer script to keep it closer to machine, better performance
-    script: "https://zed.dev/install.sh"
+    script: "curl -f https://zed.dev/install.sh | sh"
+"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # DEVELOPMENT
@@ -102,16 +103,16 @@ tools:
 
   pnpm:
     arch: "pnpm"
-    script: "https://get.pnpm.io/install.sh"
+    script: "curl -fsSL https://get.pnpm.io/install.sh | sh -"
 
   uv:
-    script: "https://astral.sh/uv/install.sh"
+    script: "curl -LsSf https://astral.sh/uv/install.sh | sh"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # TERMINAL
   # ═══════════════════════════════════════════════════════════════════════════
   warp-terminal:
-    arch: "warp-terminal-bin"
+    aur: "warp-terminal-bin"
     debian_url: "https://app.warp.dev/get_warp?package=deb"
     fedora_url: "https://app.warp.dev/get_warp?package=rpm"
 
@@ -119,7 +120,7 @@ tools:
   # BROWSERS
   # ═══════════════════════════════════════════════════════════════════════════
   brave:
-    arch: "brave-bin" # AUR
+    aur: "brave-bin"
     # debian: "brave-browser" # Avoid Brave repo to ease management, flatpak works well for this usage
     # fedora: "brave-browser" # Avoid Brave repo to ease management, flatpak works well for this usage
     flatpak: "com.brave.Browser"
@@ -130,7 +131,7 @@ tools:
   Discord:
 
   zoom:
-    arch: "zoom" # AUR
+    aur: "zoom"
     flatpak: "us.zoom.Zoom"
     debian_url: "https://zoom.us/client/latest/zoom_amd64.deb"
     fedora_url: "https://zoom.us/client/latest/zoom_x86_64.rpm"
@@ -168,7 +169,7 @@ tools:
     flatpak: "com.calibre_ebook.calibre"
 
   onlyoffice:
-    arch: "onlyoffice-bin" # aur
+    aur: "onlyoffice-bin"
     # debian_url: "https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb" # flatpak prefered
     flatpak: "org.onlyoffice.desktopeditors"
 
@@ -195,5 +196,8 @@ tools:
   # IA
   # ═══════════════════════════════════════════════════════════════════════════
   ollama:
-    arch: "ollama cuda"
-    script: "https://ollama.com/install.sh"
+    arch: "ollama"
+    script: "curl -fsSL https://ollama.com/install.sh | sh"
+
+  gentle-ai:
+    script: "curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash"
