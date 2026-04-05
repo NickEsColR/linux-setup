@@ -90,8 +90,7 @@ tools:
   # ═══════════════════════════════════════════════════════════════════════════
   docker:
     arch: "docker docker-compose"
-    debian: "docker.io docker-compose-v2"
-    fedora: "docker docker-compose-plugin"
+    ppa: "https://docs.docker.com/engine/install/debian"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # ENVIRONMENT MANAGERS
@@ -128,6 +127,7 @@ tools:
   # COMUNICACION
   # ═══════════════════════════════════════════════════════════════════════════
   Discord:
+    flatpak: "com.discordapp.Discord"
 
   zoom:
     aur: "zoom"
@@ -189,7 +189,9 @@ tools:
   performance_tools:
     arch: "mangohud lib32-mangohud goverlay"
     debian: "mangohud goverlay"
-    flatpak: "org.freedesktop.Platform.VulkanLayer.MangoHud" # Si steam o heroic se instalan en flatpak
+
+  mango-juice:
+    flatpak: "io.github.radiolamp.mangojuice" # Si steam o heroic se instalan en flatpak
 
   # ═══════════════════════════════════════════════════════════════════════════
   # IA
